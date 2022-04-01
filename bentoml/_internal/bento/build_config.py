@@ -17,7 +17,7 @@ from ..utils import resolve_user_filepath
 from ..utils import copy_file_to_fs_folder
 from .docker import ImageProvider
 from ...exceptions import InvalidArgument
-from .build_dev_bentoml_whl import build_bentoml_whl_to_target_if_in_editable_mode
+from .build_dev_bentoml_whl import build_bentoml_whl_to_target_if_requested
 
 logger = logging.getLogger(__name__)
 
@@ -239,6 +239,7 @@ class PythonOptions:
     extra_index_url: t.Optional[t.List[str]] = None
     pip_args: t.Optional[str] = None
     wheels: t.Optional[t.List[str]] = None
+    bundle_local_build: t.Optional[bool] = None
 
     def __attrs_post_init__(self):
         if self.requirements_txt and self.packages:
@@ -270,8 +271,9 @@ class PythonOptions:
                 copy_file_to_fs_folder(whl_file, bento_fs, wheels_folder)
 
         # If BentoML is installed in editable mode, build bentoml whl and save to Bento
-        build_bentoml_whl_to_target_if_in_editable_mode(
-            bento_fs.getsyspath(wheels_folder)
+        build_bentoml_whl_to_target_if_requested(
+            bento_fs.getsyspath(wheels_folder),
+            self.bundle_local_build,
         )
 
         if self.requirements_txt is not None:
